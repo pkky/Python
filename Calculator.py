@@ -97,14 +97,16 @@ class Calculator(tk.Toplevel):
 
     def add_to_input(self, value):
         if value in ['+', '-', '*', '/']:
-            if not self.memory:
-                self.memory = self.current_input.replace(" ", "")
-            self.operator = value
-            self.current_input = ""
+            if self.current_input and not self.current_input[-1] in ['+', '-', '*', '/']:
+                if not self.memory:
+                    self.memory = self.current_input.replace(" ", "")
+                self.operator = value
+                self.current_input = ""
         elif value == "=":
             if self.memory and self.operator:
                 try:
-                    expression = f"{self.memory.replace(' ', '')} {self.operator} {self.current_input.replace(' ', '')}"
+                    # Remove leading zeros from each number in the expression
+                    expression = f"{self.remove_leading_zeros(self.memory)} {self.operator} {self.remove_leading_zeros(self.current_input)}"
                     result = str(eval(expression))
                     self.current_input = self.format_output(result)
                     self.memory = None
@@ -118,11 +120,13 @@ class Calculator(tk.Toplevel):
             self.memory = None
             self.operator = None
         else:
-            temp_input = self.current_input + str(value)
-            if temp_input.replace(" ", "").isdigit() and len(temp_input.replace(" ", "")) <= 16:
-                self.current_input = temp_input
+            self.current_input += str(value)
 
         self.update_display()
+
+    def remove_leading_zeros(self, number_str):
+        # Split the string into individual numbers and remove leading zeros
+        return ' '.join([str(int(num)) if num.isdigit() else num for num in number_str.split()])
 
     def toggle_dark_mode(self):
         self.is_dark_mode = not self.is_dark_mode
